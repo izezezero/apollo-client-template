@@ -18,6 +18,9 @@ persistCache({
   storage: window.localStorage,
 })
 
+console.log(process)
+
+
 const graphqlWs = new SubscriptionClient(process.env.REACT_APP_GRAPHQL_SUBSCRIPTION, {
   reconnect: true,
 })
@@ -55,6 +58,7 @@ const stateLink = withClientState({
     },
   },
 })
+
 
 const linkWs = new WebSocketLink(graphqlWs)
 const linkHttp = ApolloLink.from([
