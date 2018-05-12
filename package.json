@@ -23,9 +23,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-app-env --env-file=${BUILD_ENV}.env build",
-    "build:development": "BUILD_ENV=development yarn build",
-    "build:production": "BUILD_ENV=production yarn build",
+    "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }
