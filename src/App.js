@@ -72,7 +72,16 @@ const createUser = gql`
   }
 `
 const AppBindQuery = () => (
-  <Mutation mutation={createUser}>
+  <Mutation
+    mutation={createUser}
+    update={(cache, { data: { createUser } }) => {
+      const { users } = cache.readQuery({ query: getCurrentUser })
+      cache.writeQuery({
+        query: getCurrentUser,
+        data: { users: users.concat(createUser) },
+      })
+    }}
+  >
     {
       (createUser, data) => (
         <Query query={getCurrentUser}>
