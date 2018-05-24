@@ -29,8 +29,8 @@
 
 .nameCard{
   text-align: center;
-  width: 400px;
-  height: 100px;
+  width: 500px;
+  height: 150px;
   padding: 20px;
   border: 1px solid black;
   margin: 30px;
@@ -62,4 +62,12 @@
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.smallBlock{
+   margin: 10px;
+  width: 40%;
+    height: 100%;
+    
+    display: inline-block;
 }
