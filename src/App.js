@@ -15,6 +15,9 @@ class App extends Component {
       website: '',
     },
   }
+  componentDidMount() {
+    this.unscription = this.props.subscription()
+  }
 
   handleChange = (e) => {
     this.setState({
@@ -26,9 +29,7 @@ class App extends Component {
   }
 
   async createCustomer() {
-    console.log(this.state.createCustomerInput)
     await this.props.createCustomer({ variables: { createCustomerInput: this.state.createCustomerInput } })
-    await this.props.refetch()
   }
   render() {
     return (
@@ -121,22 +122,39 @@ class App extends Component {
   }
 }
 
-const getCurrentCustomer = gql`
-  query GetCurrentCustomer {
-            customers{
+const customerSubscription = gql`
+  subscription customerSubscription {
+    customerSubscription{
+      id
+        firstName
+        lastName
+        fullName
+        email
+        website
+        company{
           id
-          firstName
-          lastName
-          fullName
-          email
-          website
-          company{
-            id
-            name
-          }
+          name
+        }
+    }
+  }
+    `
+
+const getCurrentCustomer = gql`
+query GetCurrentCustomer {
+          customers{
+        id
+        firstName
+        lastName
+        fullName
+        email
+        website
+        company{
+          id
+          name
         }
       }
-    `
+    }
+  `
 
 const createCustomer = gql`
   mutation createCustomer($createCustomerInput : CreateCustomerInput){
@@ -157,22 +175,31 @@ const createCustomer = gql`
 const AppBindQuery = () => (
   <Mutation
     mutation={createCustomer}
-    update={(cache, { data: { createCustomer } }) => {
-      const { customers } = cache.readQuery({ query: getCurrentCustomer })
-      console.log('creactCustomer',)
-      cache.writeQuery({
-        query: getCurrentCustomer,
-        data: { customers: customers.concat(createCustomer) },
-      })
-    }}
   >
     {
       (createCustomer, data) => (
         <Query query={getCurrentCustomer}>
           {
-            ({ loading, data, refetch }) => (!loading ? (
-              <App data={data} createCustomer={createCustomer} refetch={refetch} />
-            ) : null)
+            ({
+              loading, data, subscribeToMore,
+            }) => (
+                !loading ? (
+                  <App
+                    data={data}
+                    createCustomer={createCustomer}
+                    subscription={() => subscribeToMore({
+                      document: customerSubscription,
+                      updateQuery: (prev, { subscriptionData }) => {
+                        if (!subscriptionData) return prev
+                        console.log('subscriptionData', subscriptionData)
+                        return {
+                          ...prev,
+                          customers: [...prev.customers, subscriptionData.data.customerSubscription],
+                        }
+                      },
+                    })}
+                  />
+                ) : null)
           }
         </Query>
       )
