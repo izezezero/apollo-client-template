@@ -6,13 +6,11 @@ import './App.css'
 
 class App extends Component {
   state = {
-    createCustomerInput: {
+    createUserInput: {
       id: 0,
       firstName: '',
       lastName: '',
-      fullName: '',
       email: '',
-      website: '',
     },
   }
   componentDidMount() {
@@ -21,15 +19,15 @@ class App extends Component {
 
   handleChange = (e) => {
     this.setState({
-      createCustomerInput: {
-        ...this.state.createCustomerInput,
+      createUserInput: {
+        ...this.state.createUserInput,
         [e.target.name]: e.target.value,
       },
     })
   }
 
-  async createCustomer() {
-    await this.props.createCustomer({ variables: { createCustomerInput: this.state.createCustomerInput } })
+  async createUser() {
+    await this.props.createUser({ variables: { createUserInput: this.state.createUserInput } })
   }
   render() {
     return (
@@ -43,7 +41,7 @@ class App extends Component {
             <span>id</span>
             <input
               className="text-input"
-              value={this.state.createCustomerInput.id}
+              value={this.state.createUserInput.id}
               name="id"
               onChange={e => this.handleChange(e)}
             />
@@ -53,7 +51,7 @@ class App extends Component {
               className="text-input"
               name="firstName"
               onChange={e => this.handleChange(e)}
-              value={this.state.createCustomerInput.firstName}
+              value={this.state.createUserInput.firstName}
             />
 
             <span>lastName</span>
@@ -61,15 +59,7 @@ class App extends Component {
               className="text-input"
               name="lastName"
               onChange={e => this.handleChange(e)}
-              value={this.state.createCustomerInput.lastName}
-            />
-
-            <span>fullName</span>
-            <input
-              className="text-input"
-              name="fullName"
-              onChange={e => this.handleChange(e)}
-              value={this.state.createCustomerInput.fullName}
+              value={this.state.createUserInput.lastName}
             />
 
             <span>email</span>
@@ -77,41 +67,33 @@ class App extends Component {
               className="text-input"
               name="email"
               onChange={e => this.handleChange(e)}
-              value={this.state.createCustomerInput.email}
+              value={this.state.createUserInput.email}
             />
 
-            <span>website</span>
-            <input
-              className="text-input"
-              name="website"
-              onChange={e => this.handleChange(e)}
-              value={this.state.createCustomerInput.website}
-            />
-
-            <button className="button-input" onClick={() => this.createCustomer()}>CREATE</button>
+            <button className="button-input" onClick={() => this.createUser()}>CREATE</button>
           </div>
           <div className="nameCardGroup">
             {
-              this.props.data.customers.map(customer => (
-                <div key={customer.id} className="nameCard">
-                  {customer.fullName}<br />
+              this.props.data.users.map(user => (
+                <div key={user.id} className="nameCard">
+                  {user.fullName}<br />
                   <div className="smallBlock">
-                    CustomerData <br />
-                    firstName: {customer.firstName}<br />
-                    LastName: {customer.lastName} <br />
-                    Email: {customer.email} <br />
-                    Website: {customer.website} <br />
+
+                    ID: {user.id}<br />
+                    firstName: {user.firstName}<br />
+                    LastName: {user.lastName} <br />
+                    Email: {user.email} <br />
                   </div>
-                  <div className="smallBlock">
+                  {/* <div className="smallBlock">
                     {
-                      customer.company.map(company => (
+                      user.company.map(company => (
                         <div key={company.id}>
                           CompanyData<br />
                           id: {company.id}<br />
                           name: {company.name} <br />
                         </div>
                       ))}
-                  </div>
+                  </div> */}
                 </div>
               ))
             }
@@ -122,63 +104,61 @@ class App extends Component {
   }
 }
 
-const customerSubscription = gql`
-  subscription customerSubscription {
-    customerSubscription{
+const userSubscription = gql`
+  subscription{
+    userSubscription{
       id
-        firstName
-        lastName
-        fullName
-        email
-        website
-        company{
+      fullName
+      firstName
+      lastName
+      email   
+      company{
           id
-          name
+          name          
         }
     }
-  }
+}
     `
 
-const getCurrentCustomer = gql`
-query GetCurrentCustomer {
-          customers{
+const getCurrentUser = gql`
+query GetCurrentUser {
+      users{
         id
         firstName
         lastName
         fullName
         email
-        website
         company{
           id
-          name
+          name          
         }
       }
     }
   `
 
-const createCustomer = gql`
-  mutation createCustomer($createCustomerInput : CreateCustomerInput){
-            createCustomer(createCustomerInput : $createCustomerInput){
+const createUser = gql`
+  mutation createUser($createUserInput : CreateUserInput){
+        createUser(createUserInput : $createUserInput){
+            id
+            firstName
+            lastName
+            fullName
+            email
+            company{
               id
-              firstName
-              lastName
-              fullName
-              email
-              website
-                company{
-                  id
-                  name
-                }
-              }
+              name              
+            }
           }
-        `
+        }
+  `
+
 const AppBindQuery = () => (
   <Mutation
-    mutation={createCustomer}
+    mutation={createUser}
   >
     {
-      (createCustomer, data) => (
-        <Query query={getCurrentCustomer}>
+      (createUser, data) => (
+        <Query query={getCurrentUser}>
           {
             ({
               loading, data, subscribeToMore,
@@ -186,15 +166,15 @@ const AppBindQuery = () => (
                 !loading ? (
                   <App
                     data={data}
-                    createCustomer={createCustomer}
+                    createUser={createUser}
                     subscription={() => subscribeToMore({
-                      document: customerSubscription,
+                      document: userSubscription,
                       updateQuery: (prev, { subscriptionData }) => {
                         if (!subscriptionData) return prev
                         console.log('subscriptionData', subscriptionData)
                         return {
                           ...prev,
-                          customers: [...prev.customers, subscriptionData.data.customerSubscription],
+                          users: [...prev.users, subscriptionData.data.userSubscription],
                         }
                       },
                     })}
